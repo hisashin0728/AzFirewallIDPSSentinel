@@ -1,0 +1,212 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9a66699d-95c7-4e1e-905e-c0d2a83836af')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9a66699d-95c7-4e1e-905e-c0d2a83836af')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2022-11-01-preview",
+            "properties": {
+                "displayName": "Detect Alert Event from IDS Events of Azure Firewall Premium",
+                "description": "Detected Alert Event from Azure Firewall IDPS.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "AZFWIdpsSignature\n| where TimeGenerated > ago(1h)\n| where Action == \"alert\"\n| where Severity != \"1\"\n| project\n    TimeGenerated,\n    SignatureId,\n    Category,\n    Description,\n    Severity,\n    Action,\n    SourceIp,\n    SourcePort,\n    DestinationIp,\n    DestinationPort\n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": "2023-07-24T10:00:00.000Z",
+                "tactics": [],
+                "techniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": "{{Description}}  from {{SourceIp}} to {{DestinationIp}} ",
+                    "alertDescriptionFormat": "Azure Firewall {{Action}} about {{Description}}  . Please check Signature ID:{{SignatureId}}  .",
+                    "alertDynamicProperties": []
+                },
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIp"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIp"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/74f6f548-2273-4f3a-ab1f-789255d3f701')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/74f6f548-2273-4f3a-ab1f-789255d3f701')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2022-11-01-preview",
+            "properties": {
+                "displayName": "Detect Blocked Event from IPS Events of Azure Firewall Premium",
+                "description": "Detected Blocked Event from Azure Firewall IDPS.",
+                "severity": "Low",
+                "enabled": true,
+                "query": "AZFWIdpsSignature\r\n| where TimeGenerated > ago(1h)\r\n| where Action == \"drop\"\r\n| project\r\n    TimeGenerated,\r\n    SignatureId,\r\n    Category,\r\n    Description,\r\n    Severity,\r\n    Action,\r\n    SourceIp,\r\n    SourcePort,\r\n    DestinationIp,\r\n    DestinationPort\r\n",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": "2023-07-24T10:00:00.000Z",
+                "tactics": [],
+                "techniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": "{{Description}}  from {{SourceIp}} to {{DestinationIp}} ",
+                    "alertDescriptionFormat": "Azure Firewall {{Action}} about {{Description}}  . Please check Signature ID:{{SignatureId}}  .",
+                    "alertDynamicProperties": []
+                },
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIp"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIp"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/04997854-623d-42c6-9e8f-e34ba888b299')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/04997854-623d-42c6-9e8f-e34ba888b299')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2022-11-01-preview",
+            "properties": {
+                "displayName": "Detect High Severity from IDS Event of Azure Firewall Premium",
+                "description": "Detected High Severity (Severity : 1) Event from Azure Firewall IDPS.",
+                "severity": "High",
+                "enabled": true,
+                "query": "AZFWIdpsSignature\r\n| where TimeGenerated > ago(1h)\r\n| where Severity == \"1\"\r\n| where Action == \"alert\"\r\n| project TimeGenerated,SignatureId,Category,Description,Severity,Action,SourceIp,SourcePort,DestinationIp,DestinationPort",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": "2023-07-24T10:00:00.000Z",
+                "tactics": [],
+                "techniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": "{{Description}}  from {{SourceIp}} to {{DestinationIp}} ",
+                    "alertDescriptionFormat": "Azure Firewall {{Action}} about {{Description}}  . Please check Signature ID:{{SignatureId}}  .",
+                    "alertDynamicProperties": []
+                },
+                "customDetails": {},
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIp"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIp"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}
