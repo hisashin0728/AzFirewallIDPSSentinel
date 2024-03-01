@@ -1,0 +1,287 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/6e286e95-abb3-410a-ac34-e5db56aab419')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/6e286e95-abb3-410a-ac34-e5db56aab419')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2022-11-01-preview",
+            "properties": {
+                "displayName": "Azure Firewall : Detect Threat Intelligence DestinationIp from IDPS Event",
+                "description": "Detected Threat Intelligence DestinationIp Event from Azure Firewall IDPS.",
+                "severity": "Low",
+                "enabled": true,
+                "query": "let LocalNetworks=dynamic([\r\n    \"10.0.0.0/8\",\r\n    \"124.211.12.0/24\",\r\n    \"124.215.217.0/24\",\r\n    \"125.29.25.0/24\",\r\n    \"134.144.0.0/16\",\r\n    \"150.92.0.0/16\",\r\n    \"151.175.0.0/16\",\r\n    \"152.150.0.0/16\",\r\n    \"156.31.0.0/16\",\r\n    \"156.149.0.0/16\",\r\n    \"158.161.0.0/16\",\r\n    \"172.16.0.0/12\",\r\n    \"192.168.0.0/16\"\r\n]);\r\nlet ioc_lookBack = 14d; // Look back 14 days for threat intelligence indicators\r\nAZFWIdpsSignature\r\n| where TimeGenerated > ago(1h)\r\n| extend SInt = ipv4_is_in_any_range(SourceIp,LocalNetworks)\r\n| extend DInt = ipv4_is_in_any_range(DestinationIp,LocalNetworks)\r\n| extend Direction = case(\r\n    SInt == \"true\" and DInt == \"false\" , \"Outbound\",\r\n    SInt == \"false\" and DInt == \"true\" , \"Inbound\",\r\n    SInt == \"true\" and DInt == \"true\" , \"Internal\",\r\n    \"Global\")\r\n| join kind=innerunique (\r\n    ThreatIntelligenceIndicator\r\n    | where TimeGenerated >= ago(ioc_lookBack)\r\n    | summarize LatestIndicatorTime = arg_max(TimeGenerated, *) by IndicatorId\r\n    | where Active == true and ExpirationDateTime > now()\r\n    )\r\n      on $left.DestinationIp == $right.NetworkSourceIP\r\n| project-away TenantId,Type, _ResourceId, SInt, DInt",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "P14D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [],
+                "techniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "AlertPerResult"
+                },
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": "{{Description}}  from {{SourceIp}} to {{DestinationIp}}",
+                    "alertDescriptionFormat": "{{Description}}. Please check Signature ID:{{SignatureId}}.\nTraffic direction is {{{Direction}}.",
+                    "alertDynamicProperties": []
+                },
+                "customDetails": {
+                    "Direction": "Direction"
+                },
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIp"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIp"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f38b15d1-9313-4607-b8e1-cf6f4dcf7f5d')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f38b15d1-9313-4607-b8e1-cf6f4dcf7f5d')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2022-11-01-preview",
+            "properties": {
+                "displayName": "Azure Firewall : Detect Threat Intelligence SourceIp from IDPS Event",
+                "description": "Detected Threat Intelligence SourceIp Event from Azure Firewall IDPS.",
+                "severity": "Low",
+                "enabled": true,
+                "query": "let LocalNetworks=dynamic([\r\n    \"10.0.0.0/8\",\r\n    \"124.211.12.0/24\",\r\n    \"124.215.217.0/24\",\r\n    \"125.29.25.0/24\",\r\n    \"134.144.0.0/16\",\r\n    \"150.92.0.0/16\",\r\n    \"151.175.0.0/16\",\r\n    \"152.150.0.0/16\",\r\n    \"156.31.0.0/16\",\r\n    \"156.149.0.0/16\",\r\n    \"158.161.0.0/16\",\r\n    \"172.16.0.0/12\",\r\n    \"192.168.0.0/16\"\r\n]);\r\nlet ioc_lookBack = 14d; // Look back 14 days for threat intelligence indicators\r\nAZFWIdpsSignature\r\n| where TimeGenerated > ago(1h)\r\n| extend SInt = ipv4_is_in_any_range(SourceIp,LocalNetworks)\r\n| extend DInt = ipv4_is_in_any_range(DestinationIp,LocalNetworks)\r\n| extend Direction = case(\r\n    SInt == \"true\" and DInt == \"false\" , \"Outbound\",\r\n    SInt == \"false\" and DInt == \"true\" , \"Inbound\",\r\n    SInt == \"true\" and DInt == \"true\" , \"Internal\",\r\n    \"Global\")\r\n| join kind=innerunique (\r\n    ThreatIntelligenceIndicator\r\n    | where TimeGenerated >= ago(ioc_lookBack)\r\n    | summarize LatestIndicatorTime = arg_max(TimeGenerated, *) by IndicatorId\r\n    | where Active == true and ExpirationDateTime > now()\r\n    )\r\n      on $left.SourceIp == $right.NetworkSourceIP\r\n| project-away TenantId,Type, _ResourceId, SInt, DInt",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "P14D",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [],
+                "techniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "AlertPerResult"
+                },
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": "{{Description}}  from {{SourceIp}} to {{DestinationIp}}",
+                    "alertDescriptionFormat": "{{Description}}. Please check Signature ID:{{SignatureId}}.\nTraffic direction is {{{Direction}}.",
+                    "alertDynamicProperties": []
+                },
+                "customDetails": {
+                    "Direction": "Direction"
+                },
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIp"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIp"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/49187b06-a981-425a-a6ec-f5d93f59f934')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/49187b06-a981-425a-a6ec-f5d93f59f934')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2022-11-01-preview",
+            "properties": {
+                "displayName": "Azure Firewall : Detect Several Medium Severity from IDPS Event",
+                "description": "Detected several Medium Severity (Severity : 2) Event from Azure Firewall IDPS.",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "let LocalNetworks=dynamic([\r\n    \"10.0.0.0/8\",\r\n    \"124.211.12.0/24\",\r\n    \"124.215.217.0/24\",\r\n    \"125.29.25.0/24\",\r\n    \"134.144.0.0/16\",\r\n    \"150.92.0.0/16\",\r\n    \"151.175.0.0/16\",\r\n    \"152.150.0.0/16\",\r\n    \"156.31.0.0/16\",\r\n    \"156.149.0.0/16\",\r\n    \"158.161.0.0/16\",\r\n    \"172.16.0.0/12\",\r\n    \"192.168.0.0/16\"\r\n]);\r\nlet thresholds = 10;\r\nAZFWIdpsSignature\r\n| where TimeGenerated > ago(1h)\r\n| extend SInt = ipv4_is_in_any_range(SourceIp,LocalNetworks)\r\n| extend DInt = ipv4_is_in_any_range(DestinationIp,LocalNetworks)\r\n| extend Direction = case(\r\n    SInt == \"true\" and DInt == \"false\" , \"Outbound\",\r\n    SInt == \"false\" and DInt == \"true\" , \"Inbound\",\r\n    SInt == \"true\" and DInt == \"true\" , \"Internal\",\r\n    \"Global\")\r\n| where Severity == \"2\"\r\n| summarize count() by SourceIp,DestinationIp,DestinationPort,Direction,SignatureId,Description\r\n| where count_ > thresholds",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [],
+                "techniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "AlertPerResult"
+                },
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": "{{Description}}  from {{SourceIp}} to {{DestinationIp}}",
+                    "alertDescriptionFormat": "{{Description}}. Please check Signature ID:{{SignatureId}}.\nTraffic direction is {{{Direction}}.",
+                    "alertDynamicProperties": []
+                },
+                "customDetails": {
+                    "Direction": "Direction"
+                },
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIp"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIp"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/04997854-623d-42c6-9e8f-e34ba888b299')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/04997854-623d-42c6-9e8f-e34ba888b299')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2022-11-01-preview",
+            "properties": {
+                "displayName": "Azure Firewall : Detect High Severity from IDPS Event",
+                "description": "Detected High Severity (Severity : 1) Event from Azure Firewall IDPS.",
+                "severity": "High",
+                "enabled": true,
+                "query": "let LocalNetworks=dynamic([\r\n    \"10.0.0.0/8\",\r\n    \"124.211.12.0/24\",\r\n    \"124.215.217.0/24\",\r\n    \"125.29.25.0/24\",\r\n    \"134.144.0.0/16\",\r\n    \"150.92.0.0/16\",\r\n    \"151.175.0.0/16\",\r\n    \"152.150.0.0/16\",\r\n    \"156.31.0.0/16\",\r\n    \"156.149.0.0/16\",\r\n    \"158.161.0.0/16\",\r\n    \"172.16.0.0/12\",\r\n    \"192.168.0.0/16\"\r\n]);\r\nAZFWIdpsSignature\r\n| where TimeGenerated > ago(1h)\r\n| extend SInt = ipv4_is_in_any_range(SourceIp,LocalNetworks)\r\n| extend DInt = ipv4_is_in_any_range(DestinationIp,LocalNetworks)\r\n| extend Direction = case(\r\n    SInt == \"true\" and DInt == \"false\" , \"Outbound\",\r\n    SInt == \"false\" and DInt == \"true\" , \"Inbound\",\r\n    SInt == \"true\" and DInt == \"true\" , \"Internal\",\r\n    \"Global\")\r\n| where Severity == \"1\"\r\n| project-away TenantId,Type, _ResourceId, SInt, DInt",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT1H",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [],
+                "techniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT1H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "AlertPerResult"
+                },
+                "alertDetailsOverride": {
+                    "alertDisplayNameFormat": "{{Description}}  from {{SourceIp}} to {{DestinationIp}}",
+                    "alertDescriptionFormat": "{{Description}}. Please check Signature ID:{{SignatureId}}.\nTraffic direction is {{{Direction}}.",
+                    "alertDynamicProperties": []
+                },
+                "customDetails": {
+                    "Direction": "Direction"
+                },
+                "entityMappings": [
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SourceIp"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "DestinationIp"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}
